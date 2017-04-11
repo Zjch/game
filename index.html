@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<style type="text/css">
+			* {
+				padding: 0;
+				margin: 0;
+			}
+			
+			body {
+				background: #123;
+			}
+			
+			table {
+				margin: 0 auto;
+				margin-top: 60px;
+				background: #fff;
+				border: 3px solid #006400;
+			}
+			
+			table,
+			td {
+				border-collapse: collapse;
+			}
+			
+			td {
+				width: 15px;
+				height: 15px;
+				border: 1px solid;
+			}
+			
+			p{
+				color: #fff;text-align: center;margin-top: 30px;
+			}
+			
+			.color {
+				background: #000;
+			}
+			
+			.color1 {
+				background: darkgreen;
+			}
+			
+			.color2 {
+				background: darkolivegreen;
+			}
+			
+			.color3 {
+				background: forestgreen;
+			}
+			
+			.cover {
+				background: #00fc00;
+			}
+			
+			.food {
+				background: #f00;
+			}
+		</style>
+	</head>
+
+	<body>
+		<table id="box"></table>
+		<p>↑↓← →控制方向/开始</p>
+		<script type="text/javascript">
+			var width = 40,
+				height = 30
+			var dir;
+			var snake=[];  //蛇头
+			var foodId;	   //蛇身
+			var flang,flang2=true;
+			var timer;
+			
+			window.onload = function() {
+				init(); //创建表格创建蛇头
+				createSnake(); //创建蛇头
+				food(); //创建食物
+				start(); //蛇的方向
+			}
+
+			function init() { //创建表格
+				for(var i = 0; i < height; i++) {
+					var tr = document.createElement('tr');
+					for(j = 0; j < width; j++) {
+						var td = document.createElement('td');
+						td.id = i + '-' + j //创建ID
+
+						td.className = 'color'
+						//td.className='color'+Math.floor(Math.random()*3+1)  //随机三种颜色
+
+						tr.appendChild(td);
+					}
+					document.getElementById('box').appendChild(tr);
+				}
+			}
+
+			//创建蛇头
+			function createSnake() {
+				var snakeID = getRandom();
+				document.getElementById(snakeID).className += ' cover'
+				snake.push(snakeID)
+			}
+
+			//创建食物
+			function food() {
+				foodId = getRandom();
+				document.getElementById(foodId).className += ' food'
+//				console.log(foodId)
+			}
+
+			//产生随机ID
+			function getRandom() {
+				var x = Math.floor(Math.random() * height)
+				var y = Math.floor(Math.random() * width)
+				return x + '-' + y
+			}
+
+			//蛇的方向
+			function start() {
+				//确定方向
+				document.onkeydown = function(event) {
+					var e = window.event || event;
+					if (flang2) {
+						if (snake.length===1) {
+							switch(e.keyCode) {
+								case 37:if(e.keyCode === 39) {return;}dir=37;break
+								case 38:if(e.keyCode === 40) {return;}dir=38;break
+								case 39:if(e.keyCode === 37) {return;}dir=39;break
+								case 40:if(e.keyCode === 38) {return;}dir=40;
+							}
+						} else{
+							switch(e.keyCode) {
+								case 37:if(dir === 39) {return;}dir=37;break
+								case 38:if(dir === 40) {return;}dir=38;break
+								case 39:if(dir === 37) {return;}dir=39;break
+								case 40:if(dir === 38) {return;}dir=40;
+							}
+						}
+					}
+					
+					flang2=false;
+					
+					//控制时间
+					if (flang) {
+						return
+					}
+					timer = setInterval(step,200);
+					flang=true;
+				}
+			}
+			
+			//蛇行走的方法
+			function step(){
+				var headX=snake[0].split('-')[0]-0;
+				var headY=snake[0].split('-')[1]-0;
+				//下一步的位置
+				switch (dir){
+					case 37:headY-=1
+						break;
+					case 38:headX-=1
+						break;
+					case 39:headY+=1
+						break;
+					case 40:headX+=1
+				}
+				//拼接一个新的蛇头
+				var newHead=headX+'-'+headY;
+			
+				//gameover
+				if (headX<0||headY<0||headX>height-1||headY>width-1||document.getElementById(newHead).className.indexOf('cover')>-1) {
+					clearInterval(timer);
+					alert('GG')
+					return;
+				}
+				//开始走
+				snake.unshift(newHead);
+				var last=snake.pop();
+//				console.log(last)
+				document.getElementById(newHead).className+=' cover';
+				document.getElementById(last).className=document.getElementById(last).className.replace(' cover','');
+				
+				flang2=true;
+				
+				//吃食物
+				if (snake[0]===foodId) {
+					document.getElementById(foodId).className=document.getElementById(foodId).className.replace(' food',' cover')
+					snake.push(foodId)
+					food()
+				}
+				
+				//gameover
+			}
+			
+			//弹出层
+//			function alert(){
+//				//灰色div
+//				var bgDiv=document.createElement('div');
+//				bgDiv.style.position='fixed';
+//				bgDiv.style.top='0';
+//				bgDiv.style.left='0';
+//				bgDiv.style.width='100%';
+//				bgDiv.style.height='100%';
+//				bgDiv.style.background='#000';
+//				bgDiv.style.opacity='0.5';
+//				bgDiv.style.zIndex='99';
+//				document.body.appendChild(bgDiv);
+//				//小div
+//				var xDiv=document.createElement('div');
+//				var str="<p>确定关闭吗?</p><button onclick='ok()' id='okBtn'>确定</button>"
+//				xDiv.style.position='fixed';
+//				xDiv.style.top='50%';
+//				xDiv.style.left='50%';
+//				xDiv.style.marginTop='-100px';
+//				xDiv.style.marginLeft='-225px';
+//				xDiv.style.width='450px';
+//				xDiv.style.height='200px';
+//				xDiv.style.background='#fff';
+//				xDiv.style.zIndex='100';
+//				xDiv.innerHTML=str;
+//				document.body.appendChild(xDiv);
+//				ok=function(){
+//					bgDiv.parentNode.removeChild(bgDiv);
+//					xDiv.parentNode.removeChild(xDiv);
+//				}
+//				document.getElementById('okBtn').focus();//给确定按钮加上焦点(让logo失去焦点)
+//			}
+//			
+			
+			
+			
+		</script>
+	</body>
+</html>
